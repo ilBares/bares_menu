@@ -1,7 +1,4 @@
-package it.unibs.fp.the_trinity.bares_menu;
-
-import it.unibs.fp.the_trinity.utilities.DataInput;
-import it.unibs.fp.the_trinity.utilities.Time;
+package it.unibs.fp.the_trinity.bares_menu.utilities;
 
 import java.util.TreeMap;
 
@@ -10,48 +7,61 @@ import java.util.TreeMap;
  *
  * @author Baresi Marco
  */
-public class Menu implements Runnable {
+public class MyMenu implements Runnable {
     private String title;
-    private TreeMap<String, Item> itemsMap;
+    private TreeMap<String, MyMenuItem> itemsMap;
     private String endKey = "0";
-    private String frame;
+    private int frameLength;
+    private int enterRepetitions = 10;
+    private String exit = "EXIT";
 
     /**
      * Constructs a new {@code Menu} with input {@code Items}.
      *
      * @param items the menu's items
      */
-    public Menu(String title, Item[] items) {
+    public MyMenu(String title, MyMenuItem[] items) {
         this.title = title;
         itemsMap = new TreeMap<>();
         for (int i=0; i<items.length; i++) {
             itemsMap.put((i+1)+"", items[i]);
         }
+        frameLength = 0;
     }
 
+    /**
+     * Starts the execution of {@code Menu}.
+     */
     @Override
     public void run() {
-        generateFrame();
+        generateFrameLength();
+        String frame = MenuUtils.generateFrame(frameLength);
+
         String choice;
         do {
-            printTitle();
+            System.out.println(MenuUtils.formatTitle(title, frame));
             printOptions();
             System.out.println(frame);
             choice = DataInput.readNotEmptyString("» ");
             if (itemsMap.containsKey(choice))
                 itemsMap.get(choice).getFunction().run();
             else if (!choice.equals(endKey)) {
-                System.out.println("♿22 Scelta non valida");
-                Time.pause(Time.HIGH_MILLIS_PAUSE);
+                System.out.print(MenuUtils.INVALID_OPTION);
+                MyTime.pause(MyTime.LOW_MILLIS_PAUSE);
+
             }
+            System.out.println(MenuUtils.getEnters(enterRepetitions));
         } while (!choice.equals(endKey));
     }
 
+    /**
+     * Prints {@link #itemsMap} values that represent options menu.
+     */
     private void printOptions() {
         for (String key : itemsMap.keySet()) {
-            System.out.println("[" + key + "]: " + itemsMap.get(key).getText());
+            System.out.println("[" + key + "] " + itemsMap.get(key).getText());
         }
-        System.out.println("[" + endKey + "]: " + "EXIT");
+        System.out.println("[" + endKey + "] " + exit + "\n");
     }
 
     /**
@@ -71,7 +81,7 @@ public class Menu implements Runnable {
     }
 
     /**
-     * This method allows to change endKey value. Return {@code true} if {@link #itemsMap}
+     * This method allows to change {@link #endKey} value. Return {@code true} if {@link #itemsMap}
      * does not contain a key with the same value.
      *
      * @param newEndKey new endKey value
@@ -85,26 +95,43 @@ public class Menu implements Runnable {
         return true;
     }
 
-    private void generateFrame() {
-        int frameLength = 0;
+    /**
+     * This method allows to change {@link #enterRepetitions} value.
+     *
+     * @param enterRepetitions new {@link #enterRepetitions} number
+     * @return {@code true} if enterRepetitions was replaced;
+     *         {@code false} otherwise
+     */
+    public boolean changeEnterRepetitions(int enterRepetitions) {
+        if (enterRepetitions < 0) return false;
+        this.enterRepetitions = enterRepetitions;
+        return true;
+    }
+
+    /**
+     * This method allows to change {@link #enterRepetitions} value.
+     *
+     * @param text new {@link #exit} text
+     */
+    public void changeExitText(String text) {
+        exit = text;
+        generateFrameLength();
+    }
+
+    /**
+     * This method generates {@link #frameLength}.
+     */
+    private void generateFrameLength() {
         int t;
         for (String key : itemsMap.keySet()) {
-            t = itemsMap.get(key).getText().length() + ("[" + key + "]: ").length();
+            t = (itemsMap.get(key).getText().length() + 30);
             if (t > frameLength)
                 frameLength = t;
         }
-        if (title.length() > frameLength)
-            frameLength = title.length();
-        frame = "▬".repeat(frameLength);
-    }
+        if (title.length()+4 > frameLength)
+            frameLength = title.length()+4;
 
-    private void printTitle() {
-        String tempTitle = "";
-        tempTitle += " ".repeat((int)Math.floor((frame.length()-2-title.length())/2.));
-        tempTitle += title;
-        tempTitle += " ".repeat((int)Math.ceil((frame.length()-2-title.length())/2.));
-        System.out.println("▿\n▿\n▿\n▖" + frame.substring(2) + "▗");
-        System.out.println("▌" + tempTitle + "▐");
-        System.out.println("▘" + frame.substring(2) + "▝");
-    }
+        if (exit.length()+3 > frameLength)
+            frameLength = exit.length()+3;
+    };
 }

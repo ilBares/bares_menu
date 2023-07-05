@@ -1,6 +1,6 @@
-package it.unibs.fp.the_trinity.utilities;
+package it.unibs.fp.the_trinity.bares_menu.utilities;
 
-public class Time {
+public class MyTime {
     public static final int REALLY_LOW_MILLIS_PAUSE = 250;
     public static final int LOW_MILLIS_PAUSE = 500;
     public static final int MEDIUM_MILLIS_PAUSE = 750;
